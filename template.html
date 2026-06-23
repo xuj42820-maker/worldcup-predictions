@@ -15,7 +15,7 @@
       </nav>
     </aside>
     <main class="content">
-      <div class="doc-content" id="doc-content">
+      <div id="doc-wrapper">
         <p class="placeholder">← 点击左侧文档查看内容</p>
       </div>
     </main>
@@ -25,23 +25,20 @@
     const docs = {{DOCS_DATA}};
 
     function showDoc(id) {
-      const contentEl = document.getElementById('doc-content');
-      contentEl.innerHTML = docs[id];
+      const wrapper = document.getElementById('doc-wrapper');
+      wrapper.innerHTML = `<div class="doc-content">${docs[id]}</div>`;
 
-      // 更新选中状态
       document.querySelectorAll('.doc-item').forEach(item => {
         item.classList.remove('active');
       });
       event.currentTarget.classList.add('active');
 
-      // 移动端隐藏侧边栏
       if (window.innerWidth <= 768) {
         document.querySelector('.sidebar').classList.add('hidden');
         document.querySelector('.content').classList.add('full');
       }
     }
 
-    // 移动端返回按钮
     document.addEventListener('DOMContentLoaded', () => {
       const content = document.querySelector('.content');
       const backBtn = document.createElement('button');
