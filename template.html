@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>世界杯预测</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1><span class="emoji">⚽</span>世界杯预测</h1>
+    <p class="subtitle">每日赛事预测分析</p>
+  </header>
+
+  <main>
+    {{PREDICTIONS}}
+  </main>
+
+  <footer>
+    <p>每天更新 · 新群友可查看历史预测</p>
+  </footer>
+
+  <script>
+    function toggleCard(header) {
+      const card = header.parentElement;
+      const content = card.querySelector('.card-content');
+      const icon = header.querySelector('.toggle-icon');
+
+      if (content.style.display === 'none' || !content.style.display) {
+        content.style.display = 'block';
+        icon.style.transform = 'rotate(180deg)';
+      } else {
+        content.style.display = 'none';
+        icon.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const firstCard = document.querySelector('.prediction-card .card-content');
+      if (firstCard) {
+        firstCard.style.display = 'block';
+        const icon = document.querySelector('.toggle-icon');
+        if (icon) icon.style.transform = 'rotate(180deg)';
+      }
+    });
+  </script>
+</body>
+</html>
