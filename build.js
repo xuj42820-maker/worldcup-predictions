@@ -11,12 +11,11 @@ async function convertDocxToHtml(filePath) {
   return result.value;
 }
 
-function extractDateFromFilename(filename) {
-  const match = filename.match(/(\d{4}[-.]?\d{2}[-.]?\d{2})/);
-  if (match) {
-    return match[1].replace(/[.]/g, '-');
-  }
-  return filename.replace('.docx', '');
+function extractInfoFromFilename(filename) {
+  const dateMatch = filename.match(/(\d{4}[-.]?\d{2}[-.]?\d{2})/);
+  const date = dateMatch ? dateMatch[1].replace(/[.]/g, '-') : filename.replace('.docx', '');
+  const title = filename.replace('.docx', '').replace(/^\d{4}[-.]?\d{2}[-.]?\d{2}[日]?_?/, '');
+  return { date, title: title || '预测文档' };
 }
 
 async function build() {
@@ -30,44 +29,42 @@ async function build() {
     .reverse();
 
   if (files.length === 0) {
-    template = template.replace('{{PREDICTIONS}}', `
-      <div class="empty-state">
-        <p>暂无预测文档</p>
-        <p>请将 Word 文档放入 docs 文件夹</p>
-      </div>
-    `);
+    template = template.replace('{{DOC_LIST}}', '<p style="padding: 1rem; color: #666;">暂无文档</p>');
+    template = template.replace('{{DOCS_DATA}}', '{}');
     fs.writeFileSync(OUTPUT_FILE, template);
     return;
   }
 
   console.log(`找到 ${files.length} 个文档`);
 
-  let predictionsHtml = '';
+  let docListHtml = '';
+  const docsData = {};
 
-  for (const file of files) {
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
     const filePath = path.join(DOCS_DIR, file);
-    const date = extractDateFromFilename(file);
+    const { date, title } = extractInfoFromFilename(file);
 
     try {
       const content = await convertDocxToHtml(filePath);
-      predictionsHtml += `
-        <div class="prediction-card">
-          <div class="card-header" onclick="toggleCard(this)">
-            <span class="date">${date}</span>
-            <span class="toggle-icon">▼</span>
-          </div>
-          <div class="card-content">
-            ${content}
-          </div>
-        </div>
+      const docId = `doc-${i}`;
+
+      docListHtml += `
+        <a class="doc-item" onclick="showDoc('${docId}')" data-id="${docId}">
+          <span class="date">${date}</span>
+          <span class="title">${title}</span>
+        </a>
       `;
+
+      docsData[docId] = content;
       console.log(`✓ 转换成功: ${file}`);
     } catch (error) {
       console.error(`✗ 转换失败: ${file}`, error.message);
     }
   }
 
-  template = template.replace('{{PREDICTIONS}}', predictionsHtml);
+  template = template.replace('{{DOC_LIST}}', docListHtml);
+  template = template.replace('{{DOCS_DATA}}', JSON.stringify(docsData));
 
   fs.writeFileSync(OUTPUT_FILE, template);
   console.log(`\n构建完成！输出文件: ${OUTPUT_FILE}`);
